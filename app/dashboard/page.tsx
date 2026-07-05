@@ -1,4 +1,5 @@
 import { UserButton } from "@clerk/nextjs";
+import TaskInput from "@/components/TaskInput";
 
 export default function DashboardPage() {
   return (
@@ -7,7 +8,7 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold">Mon Planning</h1>
         <UserButton />
       </div>
-      <p className="text-gray-500">Ton planning apparaîtra ici bientôt.</p>
+      <TaskInput />
     </main>
   );
 }
