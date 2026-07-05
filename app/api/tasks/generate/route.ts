@@ -48,8 +48,34 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Erreur génération planning:", error);
+
+    // Erreur de parsing JSON
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: "La réponse de l'IA n'est pas un JSON valide, réessayez." },
+        { status: 500 }
+      );
+    }
+
+    // Erreur quota ou rate limit Groq
+    if (error instanceof Error && error.message.includes("429")) {
+      return NextResponse.json(
+        { error: "Trop de requêtes, attendez quelques secondes et réessayez." },
+        { status: 429 }
+      );
+    }
+
+    // Erreur réseau ou API indisponible
+    if (error instanceof Error && error.message.includes("fetch")) {
+      return NextResponse.json(
+        { error: "Service IA indisponible, réessayez plus tard." },
+        { status: 503 }
+      );
+    }
+
+    // Erreur générique
     return NextResponse.json(
-      { error: "Erreur lors de la génération du planning" },
+      { error: "Erreur lors de la génération du planning, réessayez." },
       { status: 500 }
     );
   }

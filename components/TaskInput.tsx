@@ -5,10 +5,12 @@ import { useState } from "react";
 export default function TaskInput() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!input.trim()) return;
     setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/tasks/generate", {
@@ -18,8 +20,15 @@ export default function TaskInput() {
       });
 
       const data = await response.json();
-      console.log("Tâches générées:", data);
+
+      if (!response.ok) {
+        setError(data.error ?? "Une erreur est survenue.");
+        return;
+      }
+
+      //setTasks(data.tasks);
     } catch (error) {
+      setError("Erreur réseau, vérifiez votre connexion.");
       console.error("Erreur:", error);
     } finally {
       setIsLoading(false);
@@ -49,6 +58,11 @@ export default function TaskInput() {
         >
           {isLoading ? "Génération..." : "Générer mon planning"}
         </button>
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+            ⚠️ {error}
+          </div>
+        )}
       </div>
     </div>
   );
