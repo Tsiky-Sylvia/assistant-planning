@@ -26,7 +26,7 @@ const dayLabel: Record<string, string> = {
   sunday: "Dimanche",
 };
 
-export default function TaskInput() {
+export default function TaskInput({ onSaveSuccess }: { onSaveSuccess?: () => void }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -90,6 +90,7 @@ export default function TaskInput() {
       setSaved(true);
       setTasks([]);
       setInput("");
+      onSaveSuccess?.(); 
     } catch (error) {
       setError("Erreur réseau lors de la sauvegarde.");
       console.error("Erreur:", error);
@@ -156,13 +157,14 @@ export default function TaskInput() {
               className="flex flex-col gap-2 p-4 border border-gray-200 rounded-xl bg-white shadow-sm"
             >
               <div className="flex justify-between items-start">
-                <span className="font-medium text-gray-800">{task.title}</span>
-                <div className="flex items-center gap-2">
-                  <span
+                <span
                     className={`text-xs px-2 py-1 rounded-full font-medium ${priorityLabel[task.priority].color}`}
                   >
                     {priorityLabel[task.priority].label}
-                  </span>
+                </span>
+                <span className="font-medium text-gray-800">{task.title}</span>
+                <div className="flex items-center gap-2">
+                  
                   <button
                     onClick={() => handleDelete(index)}
                     className="text-gray-400 hover:text-red-500 transition-colors text-sm"
