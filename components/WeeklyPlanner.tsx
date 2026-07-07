@@ -1,6 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+} from "@dnd-kit/core";
 import TaskCard from "@/components/TaskCard";
 
 type Task = {
@@ -23,10 +34,97 @@ const days = [
   { key: "sunday", label: "Dimanche" },
 ];
 
+// Composant colonne droppable
+function DroppableDay({
+  day,
+  tasks,
+  activeId,
+}: {
+  day: { key: string; label: string };
+  tasks: Task[];
+  activeId: string | null;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: day.key });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="text-center py-2 bg-blue-50 rounded-xl">
+        <span className="text-sm font-semibold text-blue-700">{day.label}</span>
+        <p className="text-xs text-blue-400">
+          {tasks.length} tâche{tasks.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+      <div
+        ref={setNodeRef}
+        className={`flex flex-col gap-2 min-h-[200px] p-2 rounded-xl transition-colors ${
+          isOver ? "bg-blue-50 border-2 border-blue-300 border-dashed" : ""
+        }`}
+      >
+        {tasks.length === 0 && !isOver ? (
+          <div className="flex items-center justify-center h-full border-2 border-dashed border-gray-200 rounded-xl text-gray-300 text-xs">
+            Aucune tâche
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <DraggableTask key={task.id} task={task} activeId={activeId} />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Composant tâche draggable
+function DraggableTask({
+  task,
+  activeId,
+}: {
+  task: Task;
+  activeId: string | null;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: task.id });
+
+  const style = transform
+    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
+    : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`cursor-grab active:cursor-grabbing ${
+        isDragging ? "opacity-30" : ""
+      }`}
+    >
+      <TaskCard task={task} />
+    </div>
+  );
+}
+
 export default function WeeklyPlanner() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const pointSensor = useSensor(PointerSensor, {
+        activationConstraint: {
+        distance: 8,
+        },
+    });
+    const touchsens = useSensor(TouchSensor, {
+        activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+        },
+    });
+  const sensors = useSensors(
+    pointSensor,
+    touchsens
+    );
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -53,6 +151,59 @@ export default function WeeklyPlanner() {
 
   const getTasksForDay = (day: string) =>
     tasks.filter((task) => task.suggestedDay === day);
+
+  const activeTask = tasks.find((task) => task.id === activeId);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    console.log(active, over);
+
+    if (!over) return;
+
+    const taskId = active.id as string;
+    const newDay = over.id as string;
+    const task = tasks.find((t) => t.id === taskId);
+
+    console.log(task);
+
+    if (!task || task.suggestedDay === newDay) return;
+
+    // Mise à jour optimiste de l'UI
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, suggestedDay: newDay } : t
+      )
+    );
+
+    // Persistance en base
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suggestedDay: newDay }),
+      });
+
+      if (!response.ok) {
+        // Rollback si erreur
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === taskId ? { ...t, suggestedDay: task.suggestedDay } : t
+          )
+        );
+      }
+
+    } catch (error) {
+      // Rollback si erreur réseau
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, suggestedDay: task.suggestedDay } : t
+        )
+      );
+      console.error("Erreur mise à jour:", error);
+    }finally{
+        setActiveId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -81,33 +232,27 @@ export default function WeeklyPlanner() {
   }
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="grid grid-cols-7 gap-3 min-w-[900px]">
-        {days.map((day) => (
-          <div key={day.key} className="flex flex-col gap-2">
-            <div className="text-center py-2 bg-blue-50 rounded-xl">
-              <span className="text-sm font-semibold text-blue-700">
-                {day.label}
-              </span>
-              <p className="text-xs text-blue-400">
-                {getTasksForDay(day.key).length} tâche
-                {getTasksForDay(day.key).length !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 min-h-[200px]">
-              {getTasksForDay(day.key).length === 0 ? (
-                <div className="flex items-center justify-center h-full border-2 border-dashed border-gray-200 rounded-xl text-gray-300 text-xs">
-                  Aucune tâche
-                </div>
-              ) : (
-                getTasksForDay(day.key).map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))
-              )}
-            </div>
-          </div>
-        ))}
+    <DndContext
+      sensors={sensors}
+      onDragStart={(event) => setActiveId(event.active.id as string)}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="w-full overflow-x-auto">
+        <div className="grid grid-cols-7 gap-3 min-w-[900px]">
+          {days.map((day) => (
+            <DroppableDay
+              key={day.key}
+              day={day}
+              tasks={getTasksForDay(day.key)}
+              activeId={activeId}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+
+      <DragOverlay>
+        {activeTask ? <TaskCard task={activeTask} /> : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
