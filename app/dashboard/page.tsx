@@ -21,9 +21,6 @@ export default function DashboardPage() {
       <TaskInput onSaveSuccess={handleSaveSuccess} />
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold text-gray-700">
-          Planning de la semaine
-        </h2>
         <WeeklyPlanner key={refreshKey}/>
       </div>
     </main>

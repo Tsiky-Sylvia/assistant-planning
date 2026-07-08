@@ -1,3 +1,5 @@
+"use client";
+
 type Task = {
   id: string;
   title: string;
@@ -14,28 +16,74 @@ const priorityLabel: Record<string, { label: string; color: string }> = {
   LOW: { label: "Basse", color: "bg-green-100 text-green-700" },
 };
 
-export default function TaskCard({ task }: { task: Task }) {
+type TaskCardProps = {
+  task: Task;
+  onToggleStatus?: (id: string, status: "TODO" | "DONE") => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (task: Task) => void;
+};
+
+export default function TaskCard({
+  task,
+  onToggleStatus,
+  onDelete,
+  onEdit,
+}: TaskCardProps) {
   return (
     <div
-      className={`flex flex-col gap-2 p-3 border rounded-xl bg-white shadow-sm ${
+      className={`flex flex-col gap-2 p-3 border rounded-xl bg-white shadow-sm transition-opacity ${
         task.status === "DONE" ? "opacity-50" : ""
       }`}
     >
+      {/* Badge priorité */}
       <span
         className={`text-xs px-2 py-0.5 rounded-full font-medium self-start ${priorityLabel[task.priority].color}`}
       >
         {priorityLabel[task.priority].label}
       </span>
-      <span
-        className={`text-sm font-medium text-gray-800 ${
-          task.status === "DONE" ? "line-through" : ""
-        }`}
-      >
-        {task.title}
-      </span>
+
+      {/* Titre + checkbox */}
+      <div className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          checked={task.status === "DONE"}
+          onChange={() =>
+            onToggleStatus?.(
+              task.id,
+              task.status === "TODO" ? "DONE" : "TODO"
+            )
+          }
+          className="mt-0.5 cursor-pointer accent-blue-600"
+        />
+        <span
+          className={`text-sm font-medium text-gray-800 flex-1 ${
+            task.status === "DONE" ? "line-through text-gray-400" : ""
+          }`}
+        >
+          {task.title}
+        </span>
+      </div>
+
+      {/* Infos */}
       <div className="flex gap-3 text-xs text-gray-500">
         <span>⏱ {task.estimatedDuration} min</span>
         <span>🏷 {task.category}</span>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 justify-end">
+        <button
+          onClick={() => onEdit?.(task)}
+          className="text-xs text-blue-400 hover:text-blue-600 transition-colors"
+        >
+          ✏️ Modifier
+        </button>
+        <button
+          onClick={() => onDelete?.(task.id)}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          ✕ Supprimer
+        </button>
       </div>
     </div>
   );
