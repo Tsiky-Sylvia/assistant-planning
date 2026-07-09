@@ -71,16 +71,16 @@ export default function TaskCard({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-col lg:flex-row gap-2 justify-end">
         <button
           onClick={() => onEdit?.(task)}
-          className="text-xs text-blue-400 hover:text-blue-600 transition-colors"
+          className="text-xs text-blue-400 hover:text-blue-600 transition-colors w-full lg:w-1/2"
         >
           ✏️ Modifier
         </button>
         <button
           onClick={() => onDelete?.(task.id)}
-          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors w-full lg:w-1/2"
         >
           ✕ Supprimer
         </button>

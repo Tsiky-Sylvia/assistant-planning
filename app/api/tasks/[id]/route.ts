@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 
 export async function PATCH(
   req: Request,
@@ -45,9 +46,23 @@ export async function PATCH(
 
     return NextResponse.json({ task });
   } catch (error) {
-    console.error("Erreur mise à jour tâche:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          { error: "Une tâche identique existe déjà." },
+          { status: 409 }
+        );
+      }
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Enregistrement introuvable." },
+          { status: 404 }
+        );
+      }
+    }
+    console.error("Erreur de mise à jour:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la mise à jour" },
+      { error: "Erreur lors de la sauvegarde" },
       { status: 500 }
     );
   }
@@ -86,9 +101,17 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Erreur suppression tâche:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Enregistrement introuvable." },
+          { status: 404 }
+        );
+      }
+    }
+    console.error("Erreur de suppressions tâches:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la suppression" },
+      { error: "Erreur lors de la sauvegarde" },
       { status: 500 }
     );
   }

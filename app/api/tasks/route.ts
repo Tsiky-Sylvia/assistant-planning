@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -57,6 +58,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ savedTasks }, { status: 201 });
 
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          { error: "Une tâche identique existe déjà." },
+          { status: 409 }
+        );
+      }
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Enregistrement introuvable." },
+          { status: 404 }
+        );
+      }
+    }
     console.error("Erreur sauvegarde tâches:", error);
     return NextResponse.json(
       { error: "Erreur lors de la sauvegarde" },
@@ -98,9 +113,23 @@ export async function GET() {
     return NextResponse.json({ tasks });
 
   } catch (error) {
-    console.error("Erreur récupération tâches:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          { error: "Une tâche identique existe déjà." },
+          { status: 409 }
+        );
+      }
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Enregistrement introuvable." },
+          { status: 404 }
+        );
+      }
+    }
+    console.error("Erreur chargement tâches:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la récupération" },
+      { error: "Erreur lors de la chargement" },
       { status: 500 }
     );
   }

@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
+import Spinner from "@/components/Spinner";
 
 type Task = {
   id: string;
@@ -287,11 +288,7 @@ export default function WeeklyPlanner() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-40 text-gray-400">
-        Chargement du planning...
-      </div>
-    );
+    return <Spinner text="Chargement du planning..." />;
   }
 
   if (error) {
@@ -304,10 +301,10 @@ export default function WeeklyPlanner() {
 
   return (
     <>
-      <h2 className="text-xl font-bold text-gray-700">
+      <h2 className="text-xl font-bold text-gray-700 mb-4">
         Planning de la semaine
       </h2>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4"  >
         <div className="flex gap-3">
           <button
             onClick={handleAddManual}

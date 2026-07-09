@@ -73,8 +73,8 @@ export default function TaskModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col gap-4 p-6">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col gap-4 p-6 animate-slide-up">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold text-gray-800">
             {task ? "Modifier la tâche" : "Ajouter une tâche"}
@@ -95,7 +95,7 @@ export default function TaskModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ex: Appeler le client"
-            className="p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -105,7 +105,7 @@ export default function TaskModal({
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value as "LOW" | "MEDIUM" | "HIGH")}
-            className="p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="HIGH">Haute</option>
             <option value="MEDIUM">Moyenne</option>
@@ -121,7 +121,7 @@ export default function TaskModal({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Ex: travail, perso, santé..."
-            className="p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default function TaskModal({
             onChange={(e) => setEstimatedDuration(Number(e.target.value))}
             min={5}
             max={480}
-            className="p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -146,7 +146,7 @@ export default function TaskModal({
           <select
             value={suggestedDay}
             onChange={(e) => setSuggestedDay(e.target.value)}
-            className="p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {days.map((day) => (
               <option key={day.key} value={day.key}>
