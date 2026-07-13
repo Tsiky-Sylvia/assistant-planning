@@ -156,7 +156,7 @@ export default function TaskInput({ onSaveSuccess }: { onSaveSuccess?: () => voi
                 disabled={isSaving}
                 className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isSaving ? "Sauvegarde..." : "✅ Valider et sauvegarder"}
+                {isSaving ? "Sauvegarde..." : "Valider et sauvegarder"}
               </button>
             </div>
             <div className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
